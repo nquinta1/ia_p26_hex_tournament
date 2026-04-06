@@ -1,0 +1,2 @@
+# Mark compiled strategy binaries as binary (no diff, no merge)
+*.so binary

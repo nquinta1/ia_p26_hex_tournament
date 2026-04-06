@@ -24,26 +24,26 @@ estudiantes/your_team_name/
    python experiment.py --black "YourName_teamname" --white "Random" --num-games 5 --verbose
    ```
 
-3. **Compare** against all defaults (Random, GreedyPath, MCTS_Default):
+3. **Compare** against all defaults (Random + MCTS_Tier_1..5, requires Docker):
    ```bash
-   python tournament.py --team your_team_name --num-games 5
+   docker compose run team-tournament
    ```
 
 4. **Run specific configurations:**
    ```bash
-   # Dark variant (fog of war)
-   python experiment.py --black "YourName_teamname" --white "MCTS_Default" --variant dark --verbose
+   # Against a specific tier (requires Docker for MCTS tiers)
+   docker compose run experiment --black "YourName_teamname" --white "MCTS_Tier_3" --variant dark --verbose
 
    # Full local tournament (both variants)
-   python tournament.py --team your_team_name --official --num-games 5
+   docker compose run team-tournament
    ```
 
 ## Rules
 
 - Your strategy must work for **both** variants: `classic` and `dark` (fog of war).
-- **10 seconds** max per move (strict timeout — exceeding it = forfeit that game).
-- **2 CPU cores** during tournament.
-- **4 GB** memory limit per match.
+- **15 seconds** max per move (strict timeout — exceeding it = forfeit that game).
+- **4 CPU cores** during tournament.
+- **8 GB** memory limit per match.
 - Only `numpy` + standard library allowed (no extra dependencies).
 - No ML/RL pre-trained models. MCTS, minimax, heuristics, simulations are all allowed.
 - The `name` property must be unique: `"StrategyName_teamname"`.

@@ -5,7 +5,7 @@ services:
     command: >
       python tournament.py --official
         --num-games ${NUM_GAMES:-5}
-        --move-timeout ${MOVE_TIMEOUT:-10}
+        --move-timeout ${MOVE_TIMEOUT:-15}
         --board-size ${BOARD_SIZE:-11}
     volumes:
       - ./results:/app/results
@@ -13,8 +13,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "4"
-          memory: 8G
+          cpus: "8"
+          memory: 16G
 
   # ── Real evaluation tournament (for class grading) ──
   #    All students vs defaults, both variants, 10 games/pair
@@ -23,7 +23,7 @@ services:
     command: >
       python tournament.py --official --eval
         --num-games ${NUM_GAMES:-10}
-        --move-timeout ${MOVE_TIMEOUT:-10}
+        --move-timeout ${MOVE_TIMEOUT:-15}
         --board-size ${BOARD_SIZE:-11}
     volumes:
       - ./results:/app/results
@@ -31,8 +31,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "4"
-          memory: 8G
+          cpus: "8"
+          memory: 16G
 
   # ── Single match experiment ──
   experiment:
@@ -44,6 +44,7 @@ services:
         --board-size ${BOARD_SIZE:-11}
         --variant ${VARIANT:-classic}
         --num-games ${NUM_GAMES:-5}
+        --move-timeout ${MOVE_TIMEOUT:-15}
         --verbose
     volumes:
       - ./results:/app/results
@@ -51,8 +52,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "2"
-          memory: 4G
+          cpus: "4"
+          memory: 8G
 
   # ── Team-local tournament (your strategy vs defaults) ──
   team-tournament:
@@ -62,12 +63,12 @@ services:
         --team ${TEAM:-_template}
         --official
         --num-games ${NUM_GAMES:-5}
-        --move-timeout ${MOVE_TIMEOUT:-10}
+        --move-timeout ${MOVE_TIMEOUT:-15}
         --json estudiantes/${TEAM:-_template}/results/tournament_results.json
     volumes:
       - ./estudiantes:/app/estudiantes
     deploy:
       resources:
         limits:
-          cpus: "2"
-          memory: 4G
+          cpus: "4"
+          memory: 8G

@@ -62,7 +62,7 @@ examples:
     parser.add_argument("--board-size", type=int, default=11,
                         help="Board side length (default: 11)")
     parser.add_argument("--move-timeout", type=float, default=None,
-                        help="Override seconds per move (default: 10)")
+                        help="Override seconds per move (default: 15)")
     args = parser.parse_args()
 
     # ── Run tournament ────────────────────────────────────
@@ -81,14 +81,14 @@ examples:
         cmd.append("--official")
         cmd.append("--eval")
         num_games = args.num_games or 10
-        move_timeout = args.move_timeout or 10.0
+        move_timeout = args.move_timeout or 15.0
     elif args.official:
         cmd.append("--official")
         num_games = args.num_games or 5
-        move_timeout = args.move_timeout or 10.0
+        move_timeout = args.move_timeout or 15.0
     else:
         num_games = args.num_games or 3
-        move_timeout = args.move_timeout or 10.0
+        move_timeout = args.move_timeout or 15.0
 
     cmd += ["--num-games", str(num_games)]
     cmd += ["--move-timeout", str(move_timeout)]

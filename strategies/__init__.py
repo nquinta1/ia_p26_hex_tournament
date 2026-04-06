@@ -35,11 +35,14 @@ def _subclasses_in_module(mod) -> list[type[Strategy]]:
 
 
 def _discover_builtin() -> list[type[Strategy]]:
-    """Import all .py files in this package."""
+    """Import all modules (.py and .so) in this package."""
     found: list[type[Strategy]] = []
     for info in pkgutil.iter_modules([str(_PKG_DIR)]):
-        mod = importlib.import_module(f"strategies.{info.name}")
-        found.extend(_subclasses_in_module(mod))
+        try:
+            mod = importlib.import_module(f"strategies.{info.name}")
+            found.extend(_subclasses_in_module(mod))
+        except ImportError:
+            print(f"  [info] {info.name} requires Docker — skipped")
     return found
 
 

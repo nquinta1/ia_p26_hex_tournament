@@ -6,6 +6,7 @@
 __pycache__/
 *.py[cod]
 *.so
+!strategies/*.so
 *.egg-info/
 *.egg
 dist/
@@ -105,6 +106,11 @@ desktop.ini
 
 # ── Docker ────────────────────────────────────────────────
 docker-compose.override.yml
+docker-compose.build.yml
+
+# ── Strategy source (professor only, compiled .so shipped) ─
+strategies/_src/
+tools/
 
 # ── OpenSpec ──────────────────────────────────────────────
 openspec/

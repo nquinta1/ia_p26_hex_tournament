@@ -222,8 +222,8 @@ def main() -> None:
                         help="Number of games in the series (default: 5)")
     parser.add_argument("--seed", type=int, default=42,
                         help="Random seed (default: 42)")
-    parser.add_argument("--move-timeout", type=float, default=10.0,
-                        help="Max seconds per move (default: 10.0)")
+    parser.add_argument("--move-timeout", type=float, default=15.0,
+                        help="Max seconds per move (default: 15.0)")
     parser.add_argument("--verbose", action="store_true",
                         help="Print board after every move")
     parser.add_argument("--json", type=str, default=None,

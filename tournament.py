@@ -26,11 +26,21 @@ from pathlib import Path
 RESULTS_DIR = Path(__file__).resolve().parent / "results"
 
 # Default baselines in difficulty order (must match strategy names)
-DEFAULT_TIERS = ["Random", "GreedyPath", "MCTS_Default"]
+DEFAULT_TIERS = [
+    "Random",
+    "MCTS_Tier_1",
+    "MCTS_Tier_2",
+    "MCTS_Tier_3",
+    "MCTS_Tier_4",
+    "MCTS_Tier_5",
+]
 TIER_SCORES = {
-    "Random": 6,
-    "GreedyPath": 8,
-    "MCTS_Default": 10,
+    "Random": 5,
+    "MCTS_Tier_1": 6,
+    "MCTS_Tier_2": 7,
+    "MCTS_Tier_3": 8,
+    "MCTS_Tier_4": 9,
+    "MCTS_Tier_5": 10,
 }
 
 
@@ -146,7 +156,7 @@ class TournamentResults:
 # Worker: play a single game between two strategies
 # ------------------------------------------------------------------
 
-def _apply_resource_limits(memory_mb: int = 4096) -> None:
+def _apply_resource_limits(memory_mb: int = 8192) -> None:
     """Set memory limit for the worker process."""
     import resource as _resource
 
@@ -166,8 +176,8 @@ def _run_match_worker(
     board_size: int,
     variant: str,
     seed: int,
-    move_timeout: float = 10.0,
-    memory_limit_mb: int = 4096,
+    move_timeout: float = 15.0,
+    memory_limit_mb: int = 8192,
 ) -> MatchResult:
     """Play one game between two strategies. Executed in a subprocess."""
     import importlib
@@ -358,8 +368,8 @@ def run_tournament(
     num_games: int = 5,
     seed: int = 42,
     max_workers: int | None = None,
-    move_timeout: float = 10.0,
-    memory_limit_mb: int = 4096,
+    move_timeout: float = 15.0,
+    memory_limit_mb: int = 8192,
     eval_mode: bool = False,
 ) -> TournamentResults:
     """Run a tournament.
@@ -469,15 +479,18 @@ def compute_grades(
 ) -> list[dict]:
     """Compute threshold-based grades for student strategies.
 
-    Scoring:
-      - Beat Random (win ≥ ceil(num_games/2) out of num_games): 6 pts
-      - Beat GreedyPath: 8 pts
-      - Beat MCTS_Default: 10 pts
+    Scoring (6-tier system):
+      - Beat Random: 5 pts
+      - Beat MCTS_Tier_1: 6 pts
+      - Beat MCTS_Tier_2: 7 pts
+      - Beat MCTS_Tier_3: 8 pts
+      - Beat MCTS_Tier_4: 9 pts
+      - Beat MCTS_Tier_5: 10 pts
       - Score is the HIGHEST threshold reached.
       - If you don't beat any default: 0 pts
+      - Auto-10: Top 3 students by total wins get score 10.
     """
     from collections import defaultdict
-    import math
 
     # wins[student][default] = count of wins
     wins: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
@@ -533,6 +546,22 @@ def compute_grades(
         })
 
     grades.sort(key=lambda x: (-x["score"], -x["total_wins"]))
+
+    # Auto-10: top 3 students by total wins get score 10
+    if len(grades) >= 1:
+        win_counts = sorted(
+            {g["total_wins"] for g in grades}, reverse=True,
+        )
+        # Find the threshold for top 3 (handle ties at 3rd place)
+        top3_threshold = win_counts[min(2, len(win_counts) - 1)]
+        if top3_threshold > 0:  # Don't give auto-10 for 0 wins
+            for g in grades:
+                if g["total_wins"] >= top3_threshold:
+                    if g["score"] < 10:
+                        g["score"] = 10
+                        g["auto_10"] = True
+
+    grades.sort(key=lambda x: (-x["score"], -x["total_wins"]))
     return grades
 
 
@@ -546,14 +575,15 @@ def print_grades(grades: list[dict]) -> None:
     for g in grades:
         beaten = ", ".join(g["beaten"]) if g["beaten"] else "none"
         detail = "  ".join(f"{k}: {v}" for k, v in g["detail"].items())
-        print(f"  {g['strategy']:<25}{g['score']:>7}{beaten:>20}  {detail}")
+        auto = " (auto-10: top 3)" if g.get("auto_10") else ""
+        print(f"  {g['strategy']:<25}{g['score']:>7}{beaten:>20}  {detail}{auto}")
     print()
 
-    # Top 3 bonus
+    # Top 3 highlight
     if len(grades) >= 3:
-        print("  TOP 3 (bonus points):")
+        print("  TOP 3 (auto-10):")
         for i, g in enumerate(grades[:3]):
-            medal = ["🥇", "🥈", "🥉"][i]
+            medal = ["#1", "#2", "#3"][i]
             print(f"    {medal} {g['strategy']} — score: {g['score']}, "
                   f"total wins: {g['total_wins']}")
         print()
@@ -616,9 +646,9 @@ examples:
                         help="Random seed (default: random for official, 42 otherwise)")
     parser.add_argument("--workers", type=int, default=None,
                         help="Max parallel workers (default: auto)")
-    parser.add_argument("--move-timeout", type=float, default=10.0,
-                        help="Max seconds per move (default: 10.0)")
-    parser.add_argument("--memory", type=int, default=4096,
+    parser.add_argument("--move-timeout", type=float, default=15.0,
+                        help="Max seconds per move (default: 15.0)")
+    parser.add_argument("--memory", type=int, default=8192,
                         help="Memory limit in MB per match (default: 4096)")
     parser.add_argument("--csv", type=str, default=None,
                         help="Save results CSV path")
